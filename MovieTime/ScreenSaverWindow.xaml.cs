@@ -62,6 +62,9 @@ namespace MovieTime {
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             if (!Preview) WindowState = WindowState.Maximized;
+        }
+
+        private void RootObject_Loaded(object sender, RoutedEventArgs e) {
             PlayInitial();
         }
 

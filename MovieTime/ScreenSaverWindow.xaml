@@ -7,7 +7,7 @@
         xmlns:Wpf="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf" x:Class="MovieTime.ScreenSaverWindow"
         mc:Ignorable="d"
         Title="ScreenSaverWindow" Height="450" Width="800" WindowStyle="None" Cursor="None" Loaded="Window_Loaded" KeyDown="Window_KeyDown" Closed="Window_Closed" MouseDown="Window_MouseDown" MouseMove="Window_MouseMove">
-    <Grid x:Name="RootObject">
+    <Grid x:Name="RootObject" Loaded="RootObject_Loaded">
         <Vlc:VlcControl xmlns:Vlc="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf" x:Name="VideoControl" Cursor="None" />
     </Grid>
 </Window>
