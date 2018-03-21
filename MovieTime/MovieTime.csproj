@@ -67,6 +67,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="WindowsFormsIntegration" />
+    <Reference Include="YamlDotNet, Version=4.3.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\YamlDotNet.4.3.1\lib\net45\YamlDotNet.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <ApplicationDefinition Include="App.xaml">
@@ -77,8 +80,24 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Config\AppConfig.cs" />
+    <Compile Include="Config\FileConfigUtil.cs" />
+    <Compile Include="Config\IHasIndexConfig.cs" />
+    <Compile Include="Config\ScreenGroupConfig.cs" />
+    <Compile Include="Config\ScreenPlaylistConfig.cs" />
     <Compile Include="NativeMethods.cs" />
     <Compile Include="NativeWindowStyle.cs" />
+    <Compile Include="PathBase.cs" />
+    <Compile Include="PlaylistModel\ICanNextSyncPlaylistView.cs" />
+    <Compile Include="PlaylistModel\IPlaylistView.cs" />
+    <Compile Include="PlaylistModel\Playlist.cs" />
+    <Compile Include="Config\ScreenState.cs" />
+    <Compile Include="Config\ScreenConfig.cs" />
+    <Compile Include="PlaylistModel\PlaylistExtension.cs" />
+    <Compile Include="PlaylistModel\SequentialPlaylistView.cs" />
+    <Compile Include="PlaylistModel\ShufflePlaylistView.cs" />
+    <Compile Include="PlaylistModel\SynchronizedPlaylistView.cs" />
+    <Compile Include="ScreenSaverParam.cs" />
     <Compile Include="ScreenSaverWindow.xaml.cs">
       <DependentUpon>ScreenSaverWindow.xaml</DependentUpon>
     </Compile>

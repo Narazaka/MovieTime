@@ -13,31 +13,42 @@ using System.Windows.Media.Imaging;
 using System.Drawing;
 using System.IO;
 using PlaylistsNET.Content;
+using System.Text.RegularExpressions;
+using MovieTime.Config;
+using MovieTime.PlaylistModel;
 
 namespace MovieTime {
     /// <summary>
     /// ScreenSaverWindow.xaml の相互作用ロジック
     /// </summary>
     public partial class ScreenSaverWindow : Window {
-        bool Preview { get; } = false;
-        IList<string> Playlist { get; set; }
-        int PlaylistIndex = -1;
+        public int Index { get; }
+        public ScreenSaverParam Param { get; }
 
-        string BasePath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+        private bool Preview { get; } = false;
+        private bool Exitting { get; set; } = false;
+        private string CurrentPath { get; set; } = null;
 
-        public ScreenSaverWindow() {
+        private Vlc.DotNet.Core.VlcMediaPlayer MediaPlayer { get => VideoControl.SourceProvider.MediaPlayer; }
+        private AppConfig AppConfig { get => Param.AppConfig; }
+        private IPlaylistView PlaylistView { get => Param.PlaylistView; }
+        private long InitialTime { get => Param.InitialTime; }
+        private bool GroupChild { get => Param.Index != Index; }
+
+        public ScreenSaverWindow(int index, ScreenSaverParam param) {
+            Index = index;
+            Param = param;
+
             InitializeComponent();
 
-            var vlcDir = new DirectoryInfo(Path.Combine(
-                BasePath,
-                "libvlc",
-                IntPtr.Size == 4 ? "x86" : "x64"
-                ));
+            var vlcMediaPlayerOptions = new List<string>();
+            if (!AppConfig.Audio || Index != 0) vlcMediaPlayerOptions.Add("--noaudio");
 
-            VideoControl.SourceProvider.CreatePlayer(vlcDir, "--noaudio");
+            VideoControl.SourceProvider.CreatePlayer(new DirectoryInfo(PathBase.VlcLibDirectory), vlcMediaPlayerOptions.ToArray());
+            MediaPlayer.Stopped += PlayNext;
         }
 
-        public ScreenSaverWindow(Rectangle bounds) : this() {
+        public ScreenSaverWindow(int index, ScreenSaverParam param, Rectangle bounds) : this(index, param) {
             Topmost = true;
             Left = bounds.Left;
             Top = bounds.Top;
@@ -45,36 +56,65 @@ namespace MovieTime {
             Height = bounds.Height;
         }
 
-        public ScreenSaverWindow(IntPtr previewHandle): this() {
+        public ScreenSaverWindow(int index, ScreenSaverParam param, IntPtr previewHandle): this(index, param) {
             Preview = true;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e) {
             if (!Preview) WindowState = WindowState.Maximized;
-
-            var content = new M3uContent();
-            var playlist = content.GetFromStream(new FileStream(Path.Combine(BasePath, "default.m3u"), FileMode.Open));
-            Playlist = playlist.PlaylistEntries.Select((entry) => entry.Path).ToArray();
-
-            VideoControl.SourceProvider.MediaPlayer.Stopped += (obj, args) => PlayNext();
-            PlayNext();
+            PlayInitial();
         }
 
         private void Window_KeyDown(object sender, KeyEventArgs e) {
-            Exit();
+            if (AppConfig.ExitOnKeyDown || AppConfig.ExitAnyTime) Exit();
+        }
+
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e) {
+            if (AppConfig.ExitOnMouseDown || AppConfig.ExitAnyTime) Exit();
+        }
+
+        private void Window_MouseMove(object sender, MouseEventArgs e) {
+            if (AppConfig.ExitOnMouseMove || AppConfig.ExitAnyTime) Exit();
+        }
+
+        private void Window_Closed(object sender, EventArgs e) {
+            Save();
+        }
+
+        private void PlayInitial() {
+            if (PlaylistView == null) return;
+            System.Threading.ThreadPool.QueueUserWorkItem(async (_) => {
+                CurrentPath = await PlaylistView.Next();
+                MediaPlayer.Play(CurrentPath.ToMrl());
+                MediaPlayer.Time = InitialTime;
+            });
+        }
+
+        private void PlayNext(object obj, Vlc.DotNet.Core.VlcMediaPlayerStoppedEventArgs args) {
+            PlayNext();
         }
 
         private void PlayNext() {
+            if (Exitting) return;
             System.Threading.ThreadPool.QueueUserWorkItem((_) => {
-                PlaylistIndex++;
-                if (Playlist.Count() <= PlaylistIndex) PlaylistIndex = 0;
-                var target = new FileInfo(Path.Combine(BasePath, Playlist[PlaylistIndex]));
-                VideoControl.SourceProvider.MediaPlayer.Play(target);
+                CurrentPath = PlaylistView.Next().Result;
+                MediaPlayer.Play(CurrentPath.ToMrl());
             });
         }
 
         private void Exit() {
-            if (!Preview) Application.Current.Shutdown();
+            if (Preview) return;
+            Exitting = true;
+            Application.Current.Shutdown();
+        }
+
+        private void Save() {
+            if (Preview || GroupChild || CurrentPath == null) return;
+            new ScreenState {
+                Index = Index,
+                Path = CurrentPath,
+                Time = MediaPlayer.Time,
+            }.Save();
         }
     }
 }

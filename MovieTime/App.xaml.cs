@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 using Screen = System.Windows.Forms.Screen;
+using MovieTime.Config;
+using MovieTime.PlaylistModel;
 
 namespace MovieTime {
     /// <summary>
@@ -29,14 +31,18 @@ namespace MovieTime {
         }
 
         private void ShowScreenSaver() {
-            foreach (var screen in Screen.AllScreens) {
-                var window = new ScreenSaverWindow(screen.Bounds);
+            var screenSaverParams = ScreenSaverParam.LoadParams(Screen.AllScreens.Length);
+            for (var index = 0; index < Screen.AllScreens.Length; ++index) {
+                var screen = Screen.AllScreens[index];
+                var screenSaverParam = screenSaverParams[index];
+                var window = new ScreenSaverWindow(index, screenSaverParam, screen.Bounds);
                 window.Show();
             }
         }
 
         private void PreviewScreenSaver(IntPtr previewHandle) {
-            var window = new ScreenSaverWindow(previewHandle);
+            var screenSaverParams = ScreenSaverParam.LoadParams(1);
+            var window = new ScreenSaverWindow(0, screenSaverParams[0], previewHandle);
 
             NativeMethods.GetClientRect(previewHandle, out var rect);
             var previewParam = new HwndSourceParameters("ScreenSaverPreview");
