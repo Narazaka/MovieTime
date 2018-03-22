@@ -22,3 +22,5 @@ deploy:
   artifact: MovieTime/bin/MovieTime.zip
   on:
     appveyor_repo_tag: true
+cache:
+  - MovieTime/bin/Release/libvlc
