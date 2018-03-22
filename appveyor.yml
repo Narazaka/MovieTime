@@ -1,0 +1,24 @@
+version: "{build}"
+branches:
+  except:
+    - gh-pages
+platform:
+  - Any CPU
+configuration:
+  - Release
+before_build:
+  - nuget restore
+build:
+  project: MovieTime.sln
+artifacts:
+  - path: MovieTime/bin/Release
+    name: MovieTime
+deploy:
+  provider: GitHub
+  auth_token:
+    secure: sf2zcb1xd8VNZCqJF/VYLFGjDphmkBFXrjoFoviFndPkIJ6zj/LPPzG1c63yowsC
+  draft: false
+  prerelease: false
+  artifact: MovieTime/bin/MovieTime.zip
+  on:
+    appveyor_repo_tag: true
