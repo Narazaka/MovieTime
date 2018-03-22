@@ -13,6 +13,7 @@ build:
   project: MovieTime.sln
 after_build:
   - rename MovieTime\bin\Release\MovieTime.exe MovieTime.scr
+  - copy LICENSE MovieTime\bin\Release
 artifacts:
   - path: MovieTime/bin/Release
     name: MovieTime
