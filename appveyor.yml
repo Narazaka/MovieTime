@@ -11,6 +11,8 @@ before_build:
   - nuget restore
 build:
   project: MovieTime.sln
+after_build:
+  - rename MovieTime\bin\Release\MovieTime.exe MovieTime.scr
 artifacts:
   - path: MovieTime/bin/Release
     name: MovieTime
