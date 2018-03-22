@@ -33,7 +33,7 @@ namespace MovieTime.PlaylistModel {
         }
 
         void NewOrder() {
-            var previousEntry = PlaylistOrder.Last();
+            var previousEntry = PlaylistOrder == null ? null : PlaylistOrder.Last();
             PlaylistOrder = Playlist.OrderBy(_ => Guid.NewGuid()).ToList();
             if (PlaylistOrder.First() == previousEntry) {
                 // 次周最初の要素が直前の要素とかぶった場合はその要素を末尾に持ってきて連続再生を防ぐ
